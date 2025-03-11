@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "837028244323",
+    "project_id": "tbx-mobile-health-monitoring",
+    "storage_bucket": "tbx-mobile-health-monitoring.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837028244323:android:bcbf0ca654f61566974156",
+        "android_client_info": {
+          "package_name": "com.example.medico"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2JZ5RBIsRL7GMgAZBKAH6meLNrh_HakU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
