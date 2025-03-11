@@ -10,31 +10,192 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<Map<String, String>> medicines = [
-    {'name': 'Paracetamol Extra', 'dose': '500 mg', 'time': '8:00 AM'},
-    {'name': 'Azithromycin', 'dose': '500 mg', 'time': '6:00 AM'},
-    {'name': 'Anclofen', 'dose': '500 mg', 'time': '7:00 AM'},
+    {
+      'name': 'Paracetamol Extra',
+      'dose': '500 mg',
+      'time': '8:00 AM',
+      'frequency': 'Everyday'
+    },
+    {
+      'name': 'Azithromycin',
+      'dose': '500 mg',
+      'time': '6:00 AM',
+      'frequency': 'Today'
+    },
+    {
+      'name': 'Anclofen',
+      'dose': '500 mg',
+      'time': '7:00 AM',
+      'frequency': 'Week'
+    },
   ];
 
   String selectedFilter = "Everyday";
   final List<String> filters = ["Everyday", "Today", "Week", "Month"];
+
+  void _addMedicine() {
+    TextEditingController nameController = TextEditingController();
+    TextEditingController doseController = TextEditingController();
+    TextEditingController timeController = TextEditingController();
+    TextEditingController dateController = TextEditingController();
+    String selectedFrequency = filters[0];
+
+    Future<void> selectTime() async {
+      TimeOfDay? picked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+      if (picked != null) {
+        setState(() {
+          timeController.text = picked.format(context);
+        });
+      }
+    }
+
+    Future<void> selectDate() async {
+      DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
+      );
+      if (picked != null) {
+        setState(() {
+          dateController.text = "${picked.toLocal()}".split(' ')[0];
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Center(
+                child: Text(
+                  "Add Medicine",
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue),
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: "Medicine Name",
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: doseController,
+                      decoration: InputDecoration(
+                        labelText: "Dose",
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: timeController,
+                      decoration: InputDecoration(
+                        labelText: "Time",
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      readOnly: true,
+                      onTap: selectTime,
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: selectedFrequency,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedFrequency = value!;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: "Frequency",
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      items: filters.map((filter) {
+                        return DropdownMenuItem(
+                          value: filter,
+                          child: Text(filter),
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(height: 10),
+                    if (selectedFrequency == "Week" ||
+                        selectedFrequency == "Month")
+                      TextField(
+                        controller: dateController,
+                        decoration: InputDecoration(
+                          labelText: "Select Date",
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        readOnly: true,
+                        onTap: selectDate,
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancel", style: TextStyle(color: Colors.red)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    backgroundColor: Colors.blue,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      medicines.add({
+                        'name': nameController.text,
+                        'dose': doseController.text,
+                        'time': timeController.text,
+                        'frequency': selectedFrequency,
+                      });
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: Text("Add", style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: _addMedicine,
         backgroundColor: Colors.blue,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            100,
-          ),
+          borderRadius: BorderRadius.circular(100),
         ),
-        child: IconButton(
-          onPressed: () {},
-          icon: Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-        ),
+        child: Icon(Icons.add, color: Colors.white),
       ),
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -75,18 +236,25 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 10),
             Expanded(
-              child: Container(
-                child: ListView.builder(
-                  itemCount: medicines.length,
-                  itemBuilder: (context, index) {
-                    final medicine = medicines[index];
-                    return MedicineCard(
-                      name: medicine['name']!,
-                      dose: medicine['dose']!,
-                      time: medicine['time']!,
-                    );
+              child: ListView.builder(
+                itemCount: medicines.where(
+                  (element) {
+                    return element['frequency'] == selectedFilter;
                   },
-                ),
+                ).length,
+                itemBuilder: (context, index) {
+                  final medicine = medicines.where(
+                    (element) {
+                      return element['frequency'] == selectedFilter;
+                    },
+                  ).elementAt(index);
+                  return MedicineCard(
+                    name: medicine['name']!,
+                    dose: medicine['dose']!,
+                    time: medicine['time']!,
+                    // frequency: medicine['frequency']!,
+                  );
+                },
               ),
             ),
           ],
@@ -126,6 +294,7 @@ class MedicineCard extends StatelessWidget {
           fontFamily: 'Regular',
         ),
         trailing: PopupMenuButton(
+          color: Colors.white,
           itemBuilder: (context) {
             return [
               PopupMenuItem(
