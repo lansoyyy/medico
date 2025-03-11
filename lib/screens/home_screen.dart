@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: TextWidget(
-          text: "Your medicine reminder",
+          text: 'TB X Mobile Health Monitoring App',
           fontSize: 18,
           color: Colors.black,
         ),
@@ -297,21 +297,6 @@ class MedicineCard extends StatelessWidget {
           color: Colors.white,
           itemBuilder: (context) {
             return [
-              PopupMenuItem(
-                onTap: () {},
-                child: ListTile(
-                  title: TextWidget(
-                    align: TextAlign.start,
-                    text: 'View',
-                    fontSize: 14,
-                    color: Colors.black,
-                    fontFamily: 'Medium',
-                  ),
-                  trailing: Icon(
-                    Icons.remove_red_eye,
-                  ),
-                ),
-              ),
               PopupMenuItem(
                 onTap: () {},
                 child: ListTile(
