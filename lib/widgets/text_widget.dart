@@ -30,6 +30,7 @@ class TextWidget extends StatelessWidget {
       textAlign: align,
       maxLines: maxLines,
       style: TextStyle(
+          letterSpacing: 0,
           overflow: TextOverflow.ellipsis,
           fontStyle: isItalize! ? FontStyle.italic : null,
           decoration: decoration,
