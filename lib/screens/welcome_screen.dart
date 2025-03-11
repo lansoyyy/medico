@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medico/screens/home_screen.dart';
 import 'package:medico/widgets/button_widget.dart';
 import 'package:medico/widgets/text_widget.dart';
 
@@ -56,7 +57,10 @@ class WelcomeScreen extends StatelessWidget {
                     ButtonWidget(
                       textColor: Colors.black,
                       label: 'Get Started',
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => HomeScreen()));
+                      },
                       radius: 100,
                       color: Colors.white,
                     ),
