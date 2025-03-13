@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medico/screens/notif_screen.dart';
 import 'package:medico/widgets/text_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -207,7 +208,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => NotifScreen()));
+            },
             icon: Icon(Icons.notifications),
           ),
         ],
