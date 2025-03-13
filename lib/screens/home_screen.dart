@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medico/screens/notif_screen.dart';
+import 'package:medico/screens/reminder_screen.dart';
 import 'package:medico/services/add_medicine.dart';
+import 'package:medico/utils/colors.dart';
 import 'package:medico/widgets/text_widget.dart';
 import 'package:medico/widgets/toast_widget.dart';
 
@@ -244,8 +246,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   final data = snapshot.requireData;
-
                   final medicines = data.docs;
+
+// Format current time as "HH:mm"
+                  String currentTime =
+                      '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}';
+
+                  final newList = medicines.where(
+                    (element) {
+                      return element['dateTime'].toDate().day ==
+                              DateTime.now().day &&
+                          element['time'] == currentTime; // Compare as "HH:mm"
+                    },
+                  );
+
+                  if (newList.isNotEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (timeStamp) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ReminderScreen()));
+                      },
+                    );
+                  }
+
                   return Expanded(
                     child: ListView.builder(
                       itemCount: medicines.where(
@@ -262,7 +285,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final medicine = medicines.where(
                           (element) {
-                            return element['frequency'] == selectedFilter;
+                            return selectedFilter != 'Today'
+                                ? element['frequency'] == selectedFilter
+                                : element['frequency'] == selectedFilter &&
+                                    element['dateTime'].toDate().day ==
+                                        DateTime.now().day &&
+                                    element['dateTime'].toDate().month ==
+                                        DateTime.now().month;
                           },
                         ).elementAt(index);
                         return MedicineCard(
@@ -355,11 +384,6 @@ class MedicineCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  TimeOfDay parseTime(String timeString) {
-    List<String> parts = timeString.split(':');
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
   }
 }
 
