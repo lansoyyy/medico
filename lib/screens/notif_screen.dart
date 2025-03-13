@@ -21,32 +21,31 @@ class NotifScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: ListView.separated(
-        itemCount: 10,
+        itemCount: 1,
         separatorBuilder: (context, index) {
           return Divider();
         },
         itemBuilder: (context, index) {
           return ListTile(
-            leading: SizedBox(
-              width: 300,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.notifications,
-                    color: Colors.red,
-                  ),
-                  SizedBox(
-                    width: 15,
-                  ),
-                  TextWidget(
-                    text: 'Medication Intake for 123 is missed',
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ],
-              ),
+            leading: Icon(
+              Icons.notifications,
+              color: Colors.red,
+            ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextWidget(
+                  text: 'Medication Intake for Azithromycin is missed',
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+                TextWidget(
+                  text: 'Scheduled: 10:10PM (Everyday)',
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ],
             ),
           );
         },
