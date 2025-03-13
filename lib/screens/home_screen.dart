@@ -250,7 +250,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView.builder(
                       itemCount: medicines.where(
                         (element) {
-                          return element['frequency'] == selectedFilter;
+                          return selectedFilter != 'Today'
+                              ? element['frequency'] == selectedFilter
+                              : element['frequency'] == selectedFilter &&
+                                  element['dateTime'].toDate().day ==
+                                      DateTime.now().day &&
+                                  element['dateTime'].toDate().month ==
+                                      DateTime.now().month;
                         },
                       ).length,
                       itemBuilder: (context, index) {
