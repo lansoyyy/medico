@@ -254,9 +254,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   final newList = medicines.where(
                     (element) {
-                      return element['dateTime'].toDate().day ==
-                              DateTime.now().day &&
-                          element['time'] == currentTime; // Compare as "HH:mm"
+                      return selectedFilter == "Everyday"
+                          ? element['time'] == currentTime
+                          : element['dateTime'].toDate().day ==
+                                  DateTime.now().day &&
+                              element['time'] ==
+                                  currentTime; // Compare as "HH:mm"
                     },
                   );
 
