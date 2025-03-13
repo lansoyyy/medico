@@ -248,7 +248,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   final data = snapshot.requireData;
                   final medicines = data.docs;
 
-// Format current time as "HH:mm"
                   String currentTime =
                       '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}';
 
@@ -258,8 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? element['time'] == currentTime
                           : element['dateTime'].toDate().day ==
                                   DateTime.now().day &&
-                              element['time'] ==
-                                  currentTime; // Compare as "HH:mm"
+                              element['time'] == currentTime;
                     },
                   );
 
@@ -267,7 +265,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     WidgetsBinding.instance.addPostFrameCallback(
                       (timeStamp) {
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => ReminderScreen()));
+                            builder: (context) => ReminderScreen(
+                                  medicines: newList.toList(),
+                                )));
                       },
                     );
                   }
