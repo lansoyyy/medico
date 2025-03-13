@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:medico/screens/notif_screen.dart';
+import 'package:medico/services/add_medicine.dart';
 import 'package:medico/widgets/text_widget.dart';
+import 'package:medico/widgets/toast_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,29 +14,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Map<String, String>> medicines = [
-    {
-      'name': 'Paracetamol Extra',
-      'dose': '500 mg',
-      'time': '8:00 AM',
-      'frequency': 'Everyday'
-    },
-    {
-      'name': 'Azithromycin',
-      'dose': '500 mg',
-      'time': '6:00 AM',
-      'frequency': 'Today'
-    },
-    {
-      'name': 'Anclofen',
-      'dose': '500 mg',
-      'time': '7:00 AM',
-      'frequency': 'Week'
-    },
-  ];
-
   String selectedFilter = "Everyday";
   final List<String> filters = ["Everyday", "Today", "Week", "Month"];
+
+  TimeOfDay selectedTime = TimeOfDay.now();
+
+  DateTime selectedDate = DateTime.now();
 
   void _addMedicine() {
     TextEditingController nameController = TextEditingController();
@@ -49,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (picked != null) {
         setState(() {
           timeController.text = picked.format(context);
+          selectedTime = picked;
         });
       }
     }
@@ -63,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (picked != null) {
         setState(() {
           dateController.text = "${picked.toLocal()}".split(' ')[0];
+          selectedDate = picked;
         });
       }
     }
@@ -167,14 +156,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor: Colors.blue,
                   ),
                   onPressed: () {
-                    setState(() {
-                      medicines.add({
-                        'name': nameController.text,
-                        'dose': doseController.text,
-                        'time': timeController.text,
-                        'frequency': selectedFrequency,
-                      });
-                    });
+                    addMedicine(nameController.text, doseController.text,
+                        selectedFrequency, selectedTime, selectedDate);
                     Navigator.pop(context);
                   },
                   child: Text("Add", style: TextStyle(color: Colors.white)),
@@ -239,28 +222,55 @@ class _HomeScreenState extends State<HomeScreen> {
               fontFamily: 'Bold',
             ),
             SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: medicines.where(
-                  (element) {
-                    return element['frequency'] == selectedFilter;
-                  },
-                ).length,
-                itemBuilder: (context, index) {
-                  final medicine = medicines.where(
-                    (element) {
-                      return element['frequency'] == selectedFilter;
-                    },
-                  ).elementAt(index);
-                  return MedicineCard(
-                    name: medicine['name']!,
-                    dose: medicine['dose']!,
-                    time: medicine['time']!,
-                    // frequency: medicine['frequency']!,
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Medicine')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return const Center(child: Text('Error'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 50),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final data = snapshot.requireData;
+
+                  final medicines = data.docs;
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: medicines.where(
+                        (element) {
+                          return element['frequency'] == selectedFilter;
+                        },
+                      ).length,
+                      itemBuilder: (context, index) {
+                        final medicine = medicines.where(
+                          (element) {
+                            return element['frequency'] == selectedFilter;
+                          },
+                        ).elementAt(index);
+                        return MedicineCard(
+                          date: medicine['dateTime'].toDate(),
+                          name: medicine['name']!,
+                          dose: medicine['dose']!,
+                          time: medicine['time']!,
+                          frequency: medicine['frequency']!,
+                          docId: medicine.id,
+                        );
+                      },
+                    ),
                   );
-                },
-              ),
-            ),
+                }),
           ],
         ),
       ),
@@ -272,9 +282,19 @@ class MedicineCard extends StatelessWidget {
   final String name;
   final String dose;
   final String time;
+  final DateTime date;
+  final String docId;
+
+  final String frequency;
 
   const MedicineCard(
-      {super.key, required this.name, required this.dose, required this.time});
+      {super.key,
+      required this.name,
+      required this.dose,
+      required this.time,
+      required this.frequency,
+      required this.docId,
+      required this.date});
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +312,9 @@ class MedicineCard extends StatelessWidget {
         ),
         subtitle: TextWidget(
           align: TextAlign.start,
-          text: "$dose\nEveryday - $time",
+          text: frequency == 'Everyday' || frequency == 'Today'
+              ? "$dose\n$frequency - ${parseTime(time).format(context)}"
+              : "$dose\n$frequency - ${DateFormat.yMMMd().format(date)}, ${parseTime(time).format(context)}",
           fontSize: 14,
           color: Colors.black,
           fontFamily: 'Regular',
@@ -302,7 +324,13 @@ class MedicineCard extends StatelessWidget {
           itemBuilder: (context) {
             return [
               PopupMenuItem(
-                onTap: () {},
+                onTap: () async {
+                  await FirebaseFirestore.instance
+                      .collection('Medicine')
+                      .doc(docId)
+                      .delete();
+                  showToast('Deleted succesfully!');
+                },
                 child: ListTile(
                   title: TextWidget(
                     align: TextAlign.start,
@@ -321,6 +349,11 @@ class MedicineCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  TimeOfDay parseTime(String timeString) {
+    List<String> parts = timeString.split(':');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
   }
 }
 
